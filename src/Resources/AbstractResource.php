@@ -6,8 +6,11 @@ namespace WordPressApi\Resources;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
 use WordPressApi\Contracts\ResourceInterface;
 use WordPressApi\Exceptions\AuthenticationException;
+use WordPressApi\Exceptions\ConnectionException;
 use WordPressApi\Exceptions\NotFoundException;
 use WordPressApi\Exceptions\WordPressApiException;
 use WordPressApi\Support\PaginatedResponse;
@@ -72,6 +75,8 @@ abstract class AbstractResource implements ResourceInterface
             }
 
             return $data;
+        } catch (ConnectException $e) {
+            throw new ConnectionException("Could not connect to WordPress API: " . $e->getMessage(), 0, $e);
         } catch (ClientException $e) {
             if ($e->getResponse()->getStatusCode() === 404) {
                 throw new NotFoundException("Resource with ID {$id} not found", 404, $e);
@@ -79,6 +84,9 @@ abstract class AbstractResource implements ResourceInterface
             if ($e->getResponse()->getStatusCode() === 401 || $e->getResponse()->getStatusCode() === 403) {
                 throw new AuthenticationException("Authentication failed", $e->getResponse()->getStatusCode(), $e);
             }
+            throw new WordPressApiException("API request failed: " . $e->getMessage(), $e->getCode(), $e);
+        } catch (GuzzleException $e) {
+            // 5xx / transfer errors that are neither a 4xx client error nor a connect failure
             throw new WordPressApiException("API request failed: " . $e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -104,10 +112,14 @@ abstract class AbstractResource implements ResourceInterface
             // WordPress REST API returns an array of items when filtering by slug
             // We return the first (and should be only) match
             return $data[0];
+        } catch (ConnectException $e) {
+            throw new ConnectionException("Could not connect to WordPress API: " . $e->getMessage(), 0, $e);
         } catch (ClientException $e) {
             if ($e->getResponse()->getStatusCode() === 401 || $e->getResponse()->getStatusCode() === 403) {
                 throw new AuthenticationException("Authentication failed", $e->getResponse()->getStatusCode(), $e);
             }
+            throw new WordPressApiException("API request failed: " . $e->getMessage(), $e->getCode(), $e);
+        } catch (GuzzleException $e) {
             throw new WordPressApiException("API request failed: " . $e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -136,10 +148,14 @@ abstract class AbstractResource implements ResourceInterface
                 $this->endpoint,
                 $params
             );
+        } catch (ConnectException $e) {
+            throw new ConnectionException("Could not connect to WordPress API: " . $e->getMessage(), 0, $e);
         } catch (ClientException $e) {
             if ($e->getResponse()->getStatusCode() === 401 || $e->getResponse()->getStatusCode() === 403) {
                 throw new AuthenticationException("Authentication failed", $e->getResponse()->getStatusCode(), $e);
             }
+            throw new WordPressApiException("API request failed: " . $e->getMessage(), $e->getCode(), $e);
+        } catch (GuzzleException $e) {
             throw new WordPressApiException("API request failed: " . $e->getMessage(), $e->getCode(), $e);
         }
     }

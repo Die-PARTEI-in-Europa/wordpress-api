@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace WordPressApi\Support;
 
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
+use WordPressApi\Exceptions\ConnectionException;
+use WordPressApi\Exceptions\WordPressApiException;
 
 class QueryBuilder
 {
@@ -97,16 +101,23 @@ class QueryBuilder
 
     /**
      * Execute the query and return paginated response
+     *
+     * @throws ConnectionException
+     * @throws WordPressApiException
      */
     public function get(): PaginatedResponse
     {
-        $response = $this->client->get($this->endpoint, ['query' => $this->params]);
+        try {
+            $response = $this->client->get($this->endpoint, ['query' => $this->params]);
+        } catch (ConnectException $e) {
+            throw new ConnectionException("Could not connect to WordPress API: " . $e->getMessage(), 0, $e);
+        } catch (GuzzleException $e) {
+            throw new WordPressApiException("API request failed: " . $e->getMessage(), $e->getCode(), $e);
+        }
+
         $data = json_decode((string) $response->getBody(), true);
 
         // Handle empty or invalid JSON response
-        if ($data === null) {
-            $data = [];
-        }
         if (!is_array($data)) {
             $data = [];
         }

@@ -6,10 +6,12 @@ namespace WordPressApi\Resources;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
 use WordPressApi\Exceptions\AuthenticationException;
+use WordPressApi\Exceptions\ConnectionException;
 use WordPressApi\Exceptions\WordPressApiException;
 
-/**s 2>/dev/null && echo "Host key added")
+/**
  * WordPress Settings Resource
  *
  * Note: Some settings require authentication to read.
@@ -19,6 +21,9 @@ class Settings
 {
     private GuzzleClient $client;
     private string $endpoint;
+
+    /** @var array<string, mixed>|null Memoized settings for this instance */
+    private ?array $cache = null;
 
     public function __construct(GuzzleClient $client, string $baseUrl)
     {
@@ -38,9 +43,18 @@ class Settings
      */
     public function all(): array
     {
+        // Memoize within this instance: every getter delegates to all(), so
+        // without this each getTitle()/getUrl()/… would fire its own request.
+        if ($this->cache !== null) {
+            return $this->cache;
+        }
+
         try {
             $response = $this->client->get($this->endpoint);
-            return json_decode((string) $response->getBody(), true) ?? [];
+            $data = json_decode((string) $response->getBody(), true);
+            return $this->cache = is_array($data) ? $data : [];
+        } catch (ConnectException $e) {
+            throw new ConnectionException("Could not connect to WordPress API: " . $e->getMessage(), 0, $e);
         } catch (ClientException $e) {
             if ($e->getResponse()->getStatusCode() === 401 || $e->getResponse()->getStatusCode() === 403) {
                 throw new AuthenticationException(

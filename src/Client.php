@@ -27,6 +27,9 @@ class Client
         $config = [
             'base_uri' => $this->baseUrl,
             'timeout' => $options['timeout'] ?? 30,
+            // Fail fast when the backend is unreachable (e.g. VPN route down)
+            // instead of blocking up to the full request timeout on connect.
+            'connect_timeout' => $options['connect_timeout'] ?? 5,
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',

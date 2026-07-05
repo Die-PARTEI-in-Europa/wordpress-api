@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace WordPressApi\Resources;
 
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
+use WordPressApi\Exceptions\ConnectionException;
 use WordPressApi\Exceptions\NotFoundException;
 use WordPressApi\Exceptions\WordPressApiException;
 
@@ -27,7 +29,9 @@ class Menus extends AbstractResource
 
             $data = json_decode((string) $response->getBody(), true);
             return is_array($data) ? $data : [];
-        } catch (ClientException $e) {
+        } catch (ConnectException $e) {
+            throw new ConnectionException("Could not connect to WordPress API: " . $e->getMessage(), 0, $e);
+        } catch (GuzzleException $e) {
             throw new WordPressApiException("Failed to get menu items: " . $e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -48,7 +52,9 @@ class Menus extends AbstractResource
             }
 
             return $data[0];
-        } catch (ClientException $e) {
+        } catch (ConnectException $e) {
+            throw new ConnectionException("Could not connect to WordPress API: " . $e->getMessage(), 0, $e);
+        } catch (GuzzleException $e) {
             throw new WordPressApiException("API request failed: " . $e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -75,6 +81,9 @@ class Menus extends AbstractResource
             }
 
             return null;
+        } catch (ConnectionException $e) {
+            // Backend unreachable — propagate as-is, don't mask as a generic error.
+            throw $e;
         } catch (\Exception $e) {
             throw new WordPressApiException("Failed to get menu by location: " . $e->getMessage(), 0, $e);
         }

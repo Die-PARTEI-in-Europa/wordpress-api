@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace WordPressApi\Support;
 
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
+use WordPressApi\Exceptions\ConnectionException;
+use WordPressApi\Exceptions\WordPressApiException;
 
 class PaginatedResponse
 {
@@ -95,33 +99,57 @@ class PaginatedResponse
     }
 
     /**
-     * Fetch the next page
+     * Fetch the next page, or null if this is the last page.
+     *
+     * @throws ConnectionException
+     * @throws WordPressApiException
      */
-    public function nextPage(): self
+    public function nextPage(): ?self
     {
         if (!$this->hasNextPage()) {
-            return $this;
+            return null;
         }
 
-        $params = array_merge($this->params, ['page' => $this->currentPage + 1]);
-        $response = $this->client->get($this->endpoint, ['query' => $params]);
-        $data = json_decode((string) $response->getBody(), true);
-
-        return new self($response, $data, $this->client, $this->endpoint, $params);
+        return $this->fetchPage($this->currentPage + 1);
     }
 
     /**
-     * Fetch the previous page
+     * Fetch the previous page, or null if this is the first page.
+     *
+     * @throws ConnectionException
+     * @throws WordPressApiException
      */
-    public function previousPage(): self
+    public function previousPage(): ?self
     {
         if (!$this->hasPreviousPage()) {
-            return $this;
+            return null;
         }
 
-        $params = array_merge($this->params, ['page' => $this->currentPage - 1]);
-        $response = $this->client->get($this->endpoint, ['query' => $params]);
+        return $this->fetchPage($this->currentPage - 1);
+    }
+
+    /**
+     * Fetch a specific page, mapping transport errors to SDK exceptions.
+     *
+     * @throws ConnectionException
+     * @throws WordPressApiException
+     */
+    private function fetchPage(int $page): self
+    {
+        $params = array_merge($this->params, ['page' => $page]);
+
+        try {
+            $response = $this->client->get($this->endpoint, ['query' => $params]);
+        } catch (ConnectException $e) {
+            throw new ConnectionException("Could not connect to WordPress API: " . $e->getMessage(), 0, $e);
+        } catch (GuzzleException $e) {
+            throw new WordPressApiException("API request failed: " . $e->getMessage(), $e->getCode(), $e);
+        }
+
         $data = json_decode((string) $response->getBody(), true);
+        if (!is_array($data)) {
+            $data = [];
+        }
 
         return new self($response, $data, $this->client, $this->endpoint, $params);
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WordPressApi\Resources;
 
+use WordPressApi\Exceptions\AuthenticationException;
 use WordPressApi\Exceptions\NotFoundException;
 use WordPressApi\Exceptions\WordPressApiException;
 
@@ -46,8 +47,11 @@ class Homepage
                         'page' => $page,
                     ];
                 }
-            } catch (\Exception $e) {
-                // Settings not accessible, fall through to posts list
+            } catch (AuthenticationException $e) {
+                // Settings require auth; WordPress' default is posts-on-front,
+                // so fall through to the posts list. Connection/server errors
+                // are NOT swallowed here — they propagate so the caller sees
+                // the real failure instead of unexpected content.
             }
         }
 
@@ -58,8 +62,8 @@ class Homepage
         if ($this->settings !== null) {
             try {
                 $postsPerPage = $this->settings->getPostsPerPage() ?? 10;
-            } catch (\Exception $e) {
-                // Use default
+            } catch (AuthenticationException $e) {
+                // Settings not readable without auth — keep the default of 10.
             }
         }
 
