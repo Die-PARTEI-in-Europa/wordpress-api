@@ -7,6 +7,8 @@ A modern PHP SDK for interacting with the WordPress REST API. This SDK provides 
 
 **📘 [Full documentation & API reference](https://die-partei-in-europa.github.io/wordpress-api/)** — auto-generated from source, always up to date.
 
+> **Running a headless WordPress back end?** This SDK pairs with the [Headless WordPress Manager](https://github.com/Die-PARTEI-in-Europa/headless-wp-plugin) plugin — it disables the WordPress front end, rewrites every view link to your decoupled site and adds a signed preview endpoint that this SDK can consume. Either can be used on its own.
+
 ## Installation
 
 Install via [Composer](https://getcomposer.org) from [Packagist](https://packagist.org/packages/parteieuropa/wordpress-api):
