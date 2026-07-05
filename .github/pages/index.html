@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WordPress API SDK</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%87%AA%F0%9F%87%BA%3C/text%3E%3C/svg%3E">
+<style>
+:root{--red:#A00606;--blue:#1B4380;--bg:#0d0d0d;--surface:#161616;--surface-2:#1e1e1e;--border:rgba(255,255,255,0.08);--text:#fff;--muted:rgba(255,255,255,0.55);--shadow:0 4px 24px rgba(0,0,0,0.4);--green:#22c55e;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.55;}
+a{color:#93b4ff;text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header{background:linear-gradient(135deg,rgba(27,67,128,0.95),rgba(160,6,6,0.85)),#0d0d0d;border-bottom:1px solid rgba(160,6,6,0.4);}
+.header-inner{max-width:1160px;margin:0 auto;padding:30px 40px;}
+.header-top{display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
+.logo-mark{background:var(--red);color:#fff;font-weight:800;font-size:1rem;letter-spacing:.05em;text-transform:uppercase;padding:7px 14px;border-radius:4px;}
+.version-indicator{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;}
+.version-dot{width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+header h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;text-transform:uppercase;line-height:1.1;}
+header h1 span{color:var(--red);}
+header p{color:var(--muted);font-size:.88rem;margin-top:6px;font-weight:300;}
+
+.nav{max-width:1160px;margin:0 auto;padding:14px 40px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
+.nav a{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:6px 12px;}
+.nav a:hover{color:#fff;border-color:rgba(160,6,6,.4);background:rgba(160,6,6,.12);text-decoration:none;}
+
+main{max-width:1160px;margin:0 auto;padding:40px;}
+.section-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:44px 0 18px;display:flex;align-items:center;gap:10px;}
+.section-label:first-child{margin-top:0;}
+.section-label::after{content:"";flex:1;height:1px;background:var(--border);}
+h2{font-size:1.3rem;font-weight:800;margin:0 0 12px;}
+h3{font-size:1rem;font-weight:700;margin:0 0 8px;color:#cdd7ea;}
+p{margin:0 0 12px;color:rgba(255,255,255,.82);}
+code{background:#000;border:1px solid var(--border);border-radius:3px;padding:1px 6px;font-family:monospace;font-size:.82rem;color:#93b4ff;}
+pre{background:#000;border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 16px;}
+pre code{background:none;border:none;padding:0;color:#d6deea;font-size:.8rem;line-height:1.6;white-space:pre;}
+
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:840px){.cards{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.cards{grid-template-columns:1fr;}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;}
+.card h3{font-size:.82rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;font-weight:700;}
+.card p{font-size:.85rem;margin:0;color:rgba(255,255,255,.75);}
+
+.links{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:640px){.links{grid-template-columns:1fr;}}
+.link-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:block;color:inherit;transition:transform .12s,border-color .12s,background .12s;}
+.link-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.2);background:var(--surface-2);text-decoration:none;}
+.link-card .nm{font-weight:700;font-size:.95rem;color:#fff;display:flex;align-items:center;gap:8px;}
+.link-card .ds{font-size:.78rem;color:var(--muted);margin-top:5px;}
+
+.box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:8px;padding:14px 18px;margin:0 0 16px;font-size:.9rem;}
+.box b{color:#fff;}
+
+footer{border-top:1px solid var(--border);padding:24px 40px;display:flex;justify-content:space-between;max-width:1160px;margin:0 auto;color:var(--muted);font-size:.78rem;gap:12px;flex-wrap:wrap;}
+.eu-stars{letter-spacing:4px;color:var(--red);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="logo-mark">PARTEI EUROPA</div>
+      <div class="version-indicator"><div class="version-dot"></div>MIT Licensed</div>
+    </div>
+    <h1>WordPress <span>API SDK</span></h1>
+    <p>A modern, object-oriented PHP client for the WordPress REST API — posts, pages, menus, search, settings &amp; pagination.</p>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="./reference/">API Reference</a>
+  <a href="https://packagist.org/packages/parteieuropa/wordpress-api">Packagist</a>
+  <a href="https://github.com/Die-PARTEI-in-Europa/wordpress-api">GitHub</a>
+  <a href="https://github.com/Die-PARTEI-in-Europa/wordpress-api/tree/main/docs">Guides</a>
+</nav>
+
+<main>
+  <div class="section-label">Quick Start</div>
+  <pre><code>composer require parteieuropa/wordpress-api</code></pre>
+  <pre><code>use WordPressApi\Client;
+
+$client = new Client('https://example.com');
+$posts = $client->posts()->all();
+
+foreach ($posts->getData() as $post) {
+    echo $post['title']['rendered'] . "\n";
+}</code></pre>
+  <div class="box"><b>Requires</b> PHP 8.0+ and Composer. See the <a href="https://github.com/Die-PARTEI-in-Europa/wordpress-api/blob/main/docs/authentication.md">Authentication guide</a> for Application Passwords.</div>
+
+  <div class="section-label">Features</div>
+  <div class="cards">
+    <div class="card"><h3>Posts &amp; Pages</h3><p>Fetch, filter, sort and paginate content with a fluent query builder.</p></div>
+    <div class="card"><h3>Menus</h3><p>List menus, fetch items, and build hierarchical menu trees.</p></div>
+    <div class="card"><h3>Search</h3><p>Full-text search across content types via the WordPress REST search endpoint.</p></div>
+    <div class="card"><h3>Settings &amp; Homepage</h3><p>Read site configuration and intelligently resolve the homepage.</p></div>
+    <div class="card"><h3>Polylang</h3><p>Filter posts and pages by language when using the Polylang plugin.</p></div>
+    <div class="card"><h3>Type Safety</h3><p>Full PHP 8 type hints, custom exceptions, and 100+ unit &amp; integration tests.</p></div>
+  </div>
+
+  <div class="section-label">Resources</div>
+  <div class="links">
+    <a class="link-card" href="./reference/">
+      <div class="nm">📘 API Reference</div>
+      <div class="ds">Auto-generated class &amp; method documentation (phpDocumentor)</div>
+    </a>
+    <a class="link-card" href="https://github.com/Die-PARTEI-in-Europa/wordpress-api/tree/main/docs">
+      <div class="nm">📖 Guides</div>
+      <div class="ds">Usage examples, authentication, testing, Polylang integration</div>
+    </a>
+    <a class="link-card" href="https://packagist.org/packages/parteieuropa/wordpress-api">
+      <div class="nm">📦 Packagist</div>
+      <div class="ds">Install via Composer</div>
+    </a>
+    <a class="link-card" href="https://github.com/Die-PARTEI-in-Europa/wordpress-api">
+      <div class="nm">💻 Source on GitHub</div>
+      <div class="ds">Issues, contributions &amp; releases</div>
+    </a>
+  </div>
+</main>
+
+<footer>
+  <span class="eu-stars">★★★★★★★★★★★★</span>
+  <span>Die PARTEI in Europa · WordPress API SDK · MIT License</span>
+</footer>
+
+</body>
+</html>

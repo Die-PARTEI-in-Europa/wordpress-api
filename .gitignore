@@ -29,3 +29,6 @@ Thumbs.db
 
 # Docker volumes
 /docker/data/
+
+# Generated documentation site (built by .github/workflows/docs.yml)
+/_site/
